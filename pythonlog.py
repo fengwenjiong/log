@@ -4,10 +4,44 @@ import json
 import ssl
 import zipfile
 import os
+import sys
 
 ssl._create_default_https_context = ssl._create_unverified_context
 
-current_pwd=os.getcwd()
+def mkdir(filename):
+    current_dir=os.getcwd()
+    if os.path.exists(os.path.join(current_dir,filename)) == False:
+        os.mkdir(os.path.join(os.getcwd(), filename))
+    #os.chdir(os.path.join(os.getcwd(), filename))
+
+
+def getfilelist(filename1,filename2):
+    final_dir = os.path.join(os.getcwd(), filename1)
+    url = 'https://apis.meican.com/v2.1/closet/downloadRawLog?client_id=TMorVol3uXnalyM7J9s5MMHZdn8HgoM&client_secret=hQaauYWVcZsJR4zEXMdFY4ogo7lsQOT&pathKey='
+    filelist=sys.argv[2]
+    filelistlink= url + filelist
+ #   print(filelistlink)
+    urllib.request.urlretrieve(filelistlink, os.path.join(final_dir, "logList.txt"))
+    list = open(os.path.join(final_dir, "logList.txt"))
+    line=list.readline()
+    os.remove(os.path.join(final_dir, "logList.txt"))
+    print(line)
+    data = json.loads(line)
+    print(data['data']['url'])
+    parse_url = data['data']['url']
+    r = requests.get(parse_url)
+    with open("logDownLoad.zip", "wb") as code:
+        code.write(r.content)
+    zipFile = zipfile.ZipFile(os.path.join(os.getcwd(), "logDownLoad.zip"))
+    for file in zipFile.namelist():
+        zipFile.extract(file, os.getcwd())
+        zipFile.close()
+        os.remove(os.path.join(os.getcwd(), "logDownLoad.zip"))
+
+
+mkdir(sys.argv[1])
+getfilelist(sys.argv[1],sys.argv[2])
+
 url = 'https://apis.meican.com/v2.1/closet/downloadRawLog?client_id=TMorVol3uXnalyM7J9s5MMHZdn8HgoM&client_secret=hQaauYWVcZsJR4zEXMdFY4ogo7lsQOT&pathKey=rawlog/closet-383/version-1100473/2017-11-17_20-22/log2017_11_17_20_22.zip'
 print( "downloading...........")
 urllib.request.urlretrieve(url, os.path.join(os.getcwd(),"logPath.txt"))
@@ -31,5 +65,5 @@ for file in zipFile.namelist():
 
   os.remove(os.path.join(os.getcwd(),"logDownLoad.zip"))
 
-os.system('/Applications/SublimeText.app')
+#os.system('/Applications/SublimeText.app')
 
